@@ -9,12 +9,10 @@ class Produk extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'foto',
-        'nama_produk',
-        'kategori',
-        // 'deskripsi',
-        'harga',
-        'stok'
-    ];
+    protected $guarded = [];
+
+    public function keranjang(){
+        return $this->hasMany(Keranjang::class);
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Keranjang;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,81 +18,20 @@ class UserController extends Controller
     function auth(Request $req){
         $validateData = $req->validate([
             'email' =>['required','email'],
-            'password' =>['required']
+            'password' =>['required'],
+            'role' => ['required']
         ]);
 
         if (Auth::attempt($validateData)) {
-            return redirect('/admin')->with('pesan','Login Berhasil');
+            if (Auth::user()->role == 'admin') {
+                return redirect('/index')->with('pesan','Login Berhasil');
+            }if (Auth::user()->role == 'user') {
+                return redirect('/landing');
+            }
+
         }
         return redirect()->back()->with('pesan','login gagal');
-    }
 
-    function show(){
-
-        $data['produk'] = Produk::all();
-        $data ['total_produk'] = $data['produk']->count();
-        return view('/admin', $data);
-    }
-
-
-    function search(Request $req){
-        $data['produk'] = Produk::where('nama_produk','LIKE','%'.$req->cari.'%')->get();
-        return view('/admin',$data);
-    }
-
-    function create(){
-        return view("/produk-create");
-    }
-
-    function add(Request $req){
-
-        $filename ='';
-
-        if ($req->file('foto')) {
-            $extfile = $req->file('foto')->getClientOriginalExtension();
-            $filename = time().".".$extfile;
-            $req->file('foto')->storeAs('foto',$filename);
-        }
-
-        Produk::create([
-            'foto' => $filename,
-            'nama_produk' => $req->nama_produk,
-            'kategori' => $req->kategori,
-            'stok' => $req->stok,
-            'harga' => $req->harga,
-            // 'deskripsi' => $req->deskripsi
-
-        ]);
-        return redirect('/admin');
-    }
-
-    function edit(Request $req){
-        $data['produk'] = Produk::find($req->id);
-        return view('produk-edit',$data);
-    }
-
-    function update(Request $req){
-        Produk::where('id', $req->id)->update([
-            'nama_produk' => $req->nama_produk,
-            'kategori' => $req->kategori,
-            'stok' => $req->stok,
-            'harga' => $req->harga,
-            // 'deskripsi' => $req->deskripsi,
-        ]);
-
-        return redirect('/admin');
-    }
-
-    function delete(Request $req){
-        $produk = Produk::find($req->id);
-        $delete = Produk::where('id', $req->id)->delete();
-        if ($delete) {
-            if($produk->foto){
-                Storage::delete('foto/'.$produk->foto);
-            }
-        }
-
-        return redirect('admin');
     }
 
     function logout(){
@@ -99,16 +39,89 @@ class UserController extends Controller
         return redirect('/');
     }
 
+
     // BAGIAN USER
-    function showuser(){
+    function showproduk(){
         $data['produk'] = Produk::all();
+        $data['keranjang'] = Keranjang::all();
         return view('/landing', $data);
     }
 
+    // function detail($id){
+    //     $produk = Produk::findOrFail($id);
+    //     return view('/detail-produk', ['produk' => $produk]);
+    // }
+
     function searchuser(Request $req){
         $data['produk'] = Produk::where('nama_produk','LIKE','%'.$req->cari.'%')->orWhere('kategori','LIKE','%'.$req->cari.'%')->get();
+        $data['keranjang'] = Keranjang::all();
         return view('/search',$data);
     }
 
-    
+    function showuser(){
+        $data['user'] = User::all();
+        $data ['total_user'] = $data['user']->count();
+        return view('/user', $data);
+    }
+
+    function createuser(){
+        return view('/user-create');
+    }
+
+    function adduser(Request $req){
+
+        // $filename ='';
+
+        // if ($req->file('fotouser')) {
+        //     $extfile = $req->file('fotouser')->getClientOriginalExtension();
+        //     $filename = time().".".$extfile;
+        //     $req->file('fotouser')->storeAs('fotouser',$filename);
+        // }
+        $filename = time().'.'.$req->fotouser->extension();
+        $req->fotouser->move(public_path('fotouser'), $filename);
+
+        User::create([
+            'name' => $req->name,
+            'email' => $req->email,
+            'password' => $req->password,
+            'role' => $req->role,
+            'fotouser' => $filename,
+
+        ]);
+        return redirect('/user');
+    }
+
+    function userdelete(Request $req){
+        $user = User::find($req->id);
+        $delete = User::where('id', $req->id)->delete();
+
+        return redirect('/user');
+    }
+    function useredit(Request $req){
+        $data['user'] = User::find($req->id);
+        return view('user-edit',$data);
+    }
+
+    function userupdate(Request $req){
+
+        // if ($req->file('foto')) {
+        //     $extfile = $req->file('foto')->getClientOriginalExtension();
+        //     $filename = time().".".$extfile;
+        //     $req->file('foto')->storeAs('foto',$filename);
+        // }
+        $filename = time().'.'.$req->fotouser->extension();
+        $req->fotouser->move(public_path('fotouser'), $filename);
+        User::where('id', $req->id)->update([
+            'name' => $req->name,
+            'email' => $req->email,
+            'password' => $req->password,
+            'role' => $req->role,
+            'fotouser' => $filename,
+            // 'deskripsi' => $req->deskripsi,
+        ]);
+
+        return redirect('/user');
+    }
+
+
 }

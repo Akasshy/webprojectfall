@@ -1,5 +1,5 @@
-@extends('/template/navbar')
-@section('content')
+@extends('/template/navadmin')
+@section('contents')
 
 
     <div class="container pt-5">
@@ -34,10 +34,10 @@
                         <input type="text" class="form-control mt-2" id="productName" name="harga" placeholder="Masukkan Harga">
                     </div>
 
-                    {{-- <div class="form-group pt-2">
+                    <div class="form-group pt-2">
                         <label class="pt-2" for="comment">Deskripsi Produk</label>
                         <textarea name="deskripsi" class="form-control" rows="5" id="comment" name="text"></textarea>
-                    </div> --}}
+                    </div>
 
                     {{-- <div class="d-flex mt-2">
                         <button type="submit" name="simpan" class="mt-2  w-100 btn btn-dark btn-block" > Kembali</button> --}}
@@ -50,4 +50,6 @@
         </div>
     </div>
 
-@endsection
+
+
+    <@endsection
